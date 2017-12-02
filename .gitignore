@@ -1,1 +1,5 @@
 *.pyc
+output/*
+.floyd*
+.*.swp
+.ipynb_checkpoints
