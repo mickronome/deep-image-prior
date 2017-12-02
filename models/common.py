@@ -2,10 +2,13 @@ import torch
 import torch.nn as nn
 from .downsampler import Downsampler
 
+
 def add_module(self, module):
     self.add_module(str(len(self) + 1), module)
-    
+
+
 torch.nn.Module.add = add_module
+
 
 class Concat(nn.Module):
     def __init__(self, dim, *args):
@@ -49,6 +52,7 @@ class Swish(nn.Module):
         https://arxiv.org/abs/1710.05941
         The hype was so huge that I could not help but try it
     """
+
     def __init__(self):
         super(Swish, self).__init__()
         self.s = nn.Sigmoid()
@@ -57,7 +61,7 @@ class Swish(nn.Module):
         return x * self.s(x)
 
 
-def act(act_fun = 'LeakyReLU'):
+def act(act_fun='LeakyReLU'):
     '''
         Either string defining an activation function or module (e.g. nn.ReLU)
     '''
@@ -88,8 +92,9 @@ def conv(in_f, out_f, kernel_size, stride=1, bias=True, pad='zero', downsample_m
             downsampler = nn.AvgPool2d(stride, stride)
         elif downsample_mode == 'max':
             downsampler = nn.MaxPool2d(stride, stride)
-        elif downsample_mode  in ['lanczos2', 'lanczos3']:
-            downsampler = Downsampler(n_planes=out_f, factor=stride, kernel_type=downsample_mode, phase=0.5, preserve_size=True)
+        elif downsample_mode in ['lanczos2', 'lanczos3']:
+            downsampler = Downsampler(
+                n_planes=out_f, factor=stride, kernel_type=downsample_mode, phase=0.5, preserve_size=True)
         else:
             assert False
 
@@ -98,11 +103,11 @@ def conv(in_f, out_f, kernel_size, stride=1, bias=True, pad='zero', downsample_m
     padder = None
     to_pad = (kernel_size - 1) / 2
     if pad == 'reflection':
-        padder = nn.ReflectionPad2d(to_pad)
+        padder = nn.ReflectionPad2d(int(to_pad))
         to_pad = 0
-  
-    convolver = nn.Conv2d(in_f, out_f, kernel_size, stride, padding=to_pad, bias=bias)
 
+    convolver = nn.Conv2d(in_f, out_f, kernel_size,
+                          stride, padding=to_pad, bias=bias)
 
     layers = filter(lambda x: x is not None, [padder, convolver, downsampler])
     return nn.Sequential(*layers)
